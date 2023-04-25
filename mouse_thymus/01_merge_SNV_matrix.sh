@@ -68,8 +68,6 @@ merge<-read.csv("all_cell_SNV.csv",header=T,row.names=1)
 everysite_mutation_rate<-rowSums(merge)
 everycell_mutation_rate<-colSums(merge)
 
-
-
 # Libraries
 library(tidyverse)
 library(hrbrthemes)
@@ -128,9 +126,6 @@ ann_colors= list(
 "DC3" =mycolors[6], "NCL1"=mycolors[7], "NCL2"=mycolors[8], "T0"  =mycolors[9], "T1"  =mycolors[10],       
 "T11" =mycolors[11], "T3"  =mycolors[12], "T4"  =mycolors[13], "TEC1"=mycolors[14], "TEC2"=mycolors[15],       
 "Tprogenitor"=mycolors[16]))
-
-
-
 
 #bk <- c(seq(-2,-0.1,by=0.01),seq(0,2,by=0.01))
 #random select 500 cells to show 
