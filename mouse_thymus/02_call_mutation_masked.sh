@@ -1,11 +1,13 @@
 # After get the alignment bam file
 
 # Step1: get the bam file 
-samtools index atac_possorted_bam.bam
+mv atac_possorted_bam.bam old_atac_possorted_bam.bam
+samtools view -S -h -f 0x2 -q 10  old_atac_possorted_bam.bam  |grep chrM |samtools sort  -O bam  -@ 5 -o - > atac_possorted_chrM.bam
+samtools index atac_possorted_chrM.bam
 # Step2: picard remove the replicates
 picard MarkDuplicates CREATE_INDEX=true ASSUME_SORTED=true \
 VALIDATION_STRINGENCY=SILENT REMOVE_DUPLICATES=true \
-INPUT=atac_possorted_bam.bam \
+INPUT=atac_possorted_chrM.bam \
 OUTPUT=atac_possorted_bam_rmdup.bam  \
 METRICS_FILE=atac_possorted_bam.rmdup.metrics
 
