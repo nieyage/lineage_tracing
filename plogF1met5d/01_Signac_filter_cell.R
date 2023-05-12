@@ -53,19 +53,6 @@ OSN$high.tss <- ifelse(OSN$TSS.enrichment > 2, 'High', 'Low')
 TSSPlot(OSN, group.by = 'high.tss') + NoLegend()
 dev.off()
 
-                   atac_fragments atac_TSS_fragments atac_peak_region_fragments
-AAACAGCCACCCACAG-1           5915               1672                       3625
-AAACAGCCAGGCGATA-1           1488                759                        865
-AAACAGCCAGGCTAGA-1           2775                977                       1818
-AAACAGCCAGTTTGTG-1           2386               1070                       1726
-AAACAGCCATAACGGG-1           3665               1628                       2748
-AAACAGCCATCGCTCC-1           2136                964                       1440
-AAACAGCCATTGTGAT-1           1855                649                       1056
-AAACATGCAACCCTCC-1           2175                887                       1564
-AAACATGCAAGTGTTT-1           1623                770                       1131
-AAACATGCACACAATT-1           2693               1138                       1891
-                   atac_peak_region_cutsites
-
 OSN$pct_reads_in_peaks <- OSN$atac_peak_region_fragments / OSN$atac_fragments * 100
 OSN$blacklist_ratio <- OSN$blacklist_region_fragments / OSN$atac_peak_region_fragments
 pdf("./QC_Vln_plot.pdf",width=8,height=6)
