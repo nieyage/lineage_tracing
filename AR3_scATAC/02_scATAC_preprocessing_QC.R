@@ -249,7 +249,5 @@ combined <- RunSVD(combined)
 combined <- RunUMAP(combined, dims = 2:50, reduction = 'lsi')
 saveRDS(combined,"./03_all_celltype/combined_AR3_scATAC.rds")
 
-####################################
-# 6. annotate all cell type in AR3 #
-####################################
+
 
