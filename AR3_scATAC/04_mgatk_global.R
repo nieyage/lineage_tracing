@@ -3,7 +3,7 @@ library(Seurat)
 library(GenomicRanges)
 library(future)
 library(ggplot2)
-combined<- readRDS("./03_all_celltype/AR3_integrated_all_celltype_annotated.rds")
+combined<- readRDS("./03_all_celltype/03_recall_peak/AR3_integrated_all_celltype_annotated_recall_peak.rds")
 AR3_C4_last<- readRDS("./03_all_celltype/AR3_C4_scATAC.rds")
 AR3_C5_last<- readRDS("./03_all_celltype/AR3_C5_scATAC.rds")
 
@@ -33,75 +33,8 @@ rownames(AR3_C5_mito.data$depth) <- paste("AR3_C5_",rownames(AR3_C5_mito.data$de
 depth_all<- rbind(AR3_C4_mito.data$depth,AR3_C5_mito.data$depth)
 
 combined <- AddMetaData(combined, metadata = depth_all, col.name = "mtDNA_depth")
-pdf("./03_all_celltype/all_cell_type_mtDNA_depth.pdf",width=16,height=4)
-VlnPlot(crc, "mtDNA_depth", pt.size = 0.1) + scale_y_log10()
+Idents(combined)<- combined$detail_anno
+pdf("./03_all_celltype/04_mgatk/all_cell_type_mtDNA_depth.pdf",width=16,height=8)
+VlnPlot(combined, c("mtDNA_depth","nCount_mito","nFeature_mito"), pt.size = 0,ncol=1) + scale_y_log10()
 dev.off()
-
-# filter cells based on mitochondrial depth
-
-crc <- subset(combined, mtDNA_depth >= 10)
-crc
-variable.sites <- IdentifyVariants(crc, assay = "mito", refallele = AR3_C4_mito.data$refallele)
-pdf("./03_all_celltype/04_mgatk/VariantPlot_global.pdf")
-VariantPlot(variants = variable.sites)
-dev.off()
-
-# Establish a filtered data frame of variants based on this processing
-high.conf <- subset(
-	variable.sites, 
-	subset = n_cells_conf_detected >= 5 &
-    strand_correlation >= 0.65 &
-    vmr > 0.01
-)
-
-high.conf[,c(1,2,5)]
-crc <- AlleleFreq(
-  object = crc,
-  variants = high.conf$variant,
-  assay = "mito"
-)
-crc[["alleles"]]
-DefaultAssay(crc) <- "alleles"
-
-# all celltype mutation 
-
-
-# major celltype specific mutation 
-DoHeatmap(crc, features = rownames(crc), slot = "data", disp.max = 1) + scale_fill_viridis_c()
-
-
-# detail celltype specific mutation 
-
-
-pdf("./03_all_celltype/04_mgatk/Variant_Featureplot.pdf")
-alleles.view <- c("12889G>A", "16147C>T", "9728C>T", "9804G>A")
-FeaturePlot(
-  object = crc,
-  features = alleles.view,
-  order = TRUE,
-  cols = c("grey", "darkred"),
-  ncol = 4
-) & NoLegend()
-dev.off()
-
-#
-
-DefaultAssay(tf1) <- "alleles"
-tf1 <- FindClonotypes(tf1)
-
 saveRDS(crc,"./03_all_celltype/04_mgatk/all_cell_type_mgatk.rds")
-
-#
-#crc$log10_mtDNA_depth <- log10(crc$mtDNA_depth)
-#FeaturePlot(crc, features = c("pct_reads_in_DNase"))
-#FeaturePlot(crc, features = c("log10_mtDNA_depth"))
-#source("variant_calling.R") 
-#
-## mgatk_se is the Summarized Experiment .rds file
-## That is automatically produced from running
-## The mgatk CLI python package 
-#
-#mut_se <- call_mutations_mgatk(mgatk_se)
-
-
-
