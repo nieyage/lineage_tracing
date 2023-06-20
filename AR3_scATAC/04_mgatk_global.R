@@ -7,7 +7,7 @@ combined<- readRDS("./03_all_celltype/03_recall_peak/AR3_integrated_all_celltype
 AR3_C4_last<- readRDS("./03_all_celltype/AR3_C4_scATAC.rds")
 AR3_C5_last<- readRDS("./03_all_celltype/AR3_C5_scATAC.rds")
 
-write.table(colnames(AR3_C4_last),"~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/mgatk_for_filtered_cells/barcode.tsv",row.names=F,col.names=F)
+write.table(colnames(AR3_C4_last),"/barcode.tsv",row.names=F,col.names=F)
 write.table(colnames(AR3_C5_last),"~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/mgatk_for_filtered_cells/barcode.tsv",row.names=F,col.names=F)
 
 # load mgatk output

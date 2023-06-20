@@ -27,7 +27,20 @@ mdf[which(is.na(mdf$coverage)),]$coverage=0
 df<- aggregate(mdf$coverage,by=list(mdf$pos,mdf$celltype),mean)
 colnames(df)<- c("pos","celltype","coverage")
 
-
+# Mean coverage X
+aggregate(mdf$coverage,by=list(mdf$celltype),mean)
+    Group.1         x
+       CM 65.924376
+       EC 35.275374
+       FB 34.965598
+      Epi 35.550709
+      SMC 26.057016
+ Pericyte 33.800104
+    MP_DC 15.968654
+        T 19.030238
+        B 23.596686
+      Gra  9.830597
+    Glial 21.240215
 
 # the coverage plot 
 library(ComplexHeatmap)
@@ -53,18 +66,17 @@ myUmapcolors <- c(  '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476
          "#D9D9D9", "#BC80BD", "#CCEBC5", "#FFED6F", "#E41A1C", "#377EB8", "#4DAF4A", 
          "#FF7F00", "#FFFF33", "#A65628", "#F781BF")
 # Visualize the rolled means
-P1 <- ggplot(df, aes(x = pos, y = coverage, color = celltype)) + 
+P1 <- ggplot(df, aes(x = pos, y = log2(coverage+1), color = celltype)) + 
   geom_line() +  expand_limits(y = c(-5, 4)) +
   pretty_plot(fontsize = 8)  + scale_color_manual(values = myUmapcolors[1:11]) +
-  coord_polar(direction = 1) + labs(x = "", y = "Coverage") + scale_y_log10() +
+  coord_polar(direction = 1) + labs(x = "", y = "log2 Coverage") + scale_y_log10() +
   theme(legend.position = "none") + xxtheme 
+cowplot::ggsave2(P1, file = "./03_all_celltype/04_mgatk/rollMean_coverage.pdf", width = 4, height = 4)
 
-
-  cowplot::ggsave2(P1, file = "./03_all_celltype/04_mgatk/rollMean_coverage.pdf", width = 4, height = 4)
-P1 <- ggplot(df, aes(x = pos, y = coverage, color = celltype)) + 
+P1 <- ggplot(df, aes(x = pos, y = log2(coverage+1), color = celltype)) + 
   geom_line() +  expand_limits(y = c(-5, 4)) +
   pretty_plot(fontsize = 8)  + scale_color_manual(values = myUmapcolors[1:11]) +
-  coord_polar(direction = 1) + labs(x = "", y = "Coverage") + scale_y_log10() +
+  coord_polar(direction = 1) + labs(x = "", y = "log2 Coverage") + scale_y_log10() +
   theme(legend.position = "none")
 cowplot::ggsave2(P1, file = "./03_all_celltype/04_mgatk/rollMean_coverage2.pdf", width = 4, height = 4)
 
@@ -88,21 +100,29 @@ high.conf <- subset(
     strand_correlation >= 0.65 &
     vmr > 0.01
 )
-
+high.conf<- high.conf[order(high.conf$mean,decreasing=T),]
 high.conf[,c(1,2,5)]
 # global VAF distribution of mutation 
 # the mutation freq barplot 
-data<- variable.sites
+DefaultAssay(combined)<- "alleles"
+data<- as.numeric(GetAssayData(combined))
+data<- data[data!=0]
+data<- data.frame(variance=data)
 data$variance<- data$variance*100;
-#for(i in 1:nrow(data)){
-#	if(data$variance[i] < 0.1){data$VAF[i]<- "0.0-0.1%"}
-#	if(data$variance[i] >0.1  && data$variance[i] < 0.5){data$VAF[i]<- "0.1-0.5%"}
-#	if(data$variance[i] >0.5  && data$variance[i] < 1){data$VAF[i]<- "0.5-1%"}
-#	if(data$variance[i] >1    && data$variance[i] < 90){data$VAF[i]<- "1-90%"}
-#	if(data$variance[i] >90   && data$variance[i] < 100){data$VAF[i]<- "90-100%"}
-#}
+for(i in 1:nrow(data)){
+	if(data$variance[i] < 0.1){data$VAF[i]<- "0.0-0.1%"}
+	if(data$variance[i] >0.1  && data$variance[i] < 0.5){data$VAF[i]<- "0.1-0.5%"}
+	if(data$variance[i] >0.5  && data$variance[i] < 1){data$VAF[i]<- "0.5-1%"}
+	if(data$variance[i] >1    && data$variance[i] < 90){data$VAF[i]<- "1-90%"}
+	if(data$variance[i] >90   && data$variance[i] < 100){data$VAF[i]<- "90-100%"}
+}
 
 pdf("./03_all_celltype/04_mgatk/All_celltype_mutation_freq.pdf",width=5,height=3)
+ggplot(data=data,aes(x=VAF))+
+geom_histogram(stat="count",fill="#795885",color="#795885",alpha=0.8)+ 
+ylab("mtDNA mutations")+theme_bw()+xlab("% VAF")+
+ggtitle("All celltype")
+
 ggplot(data=data,aes(x=variance))+
 geom_histogram(fill="#795885",color="#795885",alpha=0.8)+ 
 ylab("mtDNA mutations")+theme_bw()+xlab("% VAF")+
@@ -117,132 +137,132 @@ for (j in levels(combined)){
 	print(j);
 	obj<- subset(combined,idents=j)
 	variable.sites <- IdentifyVariants(obj, assay = "mito", refallele = AR3_C4_mito.data$refallele)
-	data<- variable.sites
-    data$variance<- data$variance*100;
-#for(i in 1:nrow(data)){
-#	if(data$variance[i] < 0.1){data$VAF[i]<- "0.0-0.1%"}
-#	if(data$variance[i] >0.1  && data$variance[i] < 0.5){data$VAF[i]<- "0.1-0.5%"}
-#	if(data$variance[i] >0.5  && data$variance[i] < 1){data$VAF[i]<- "0.5-1%"}
-#	if(data$variance[i] >1    && data$variance[i] < 90){data$VAF[i]<- "1-90%"}
-#	if(data$variance[i] >90   && data$variance[i] < 100){data$VAF[i]<- "90-100%"}
-#}
-    p<- ggplot(data=data,aes(x=variance))+
-    geom_histogram(fill="#795885",color="#795885",alpha=0.8)+ 
-    ylab("mtDNA mutations")+theme_bw()+xlab("% VAF")+ggtitle(j)
+  high.conf <- subset(
+  variable.sites, 
+  subset = n_cells_conf_detected >= 5 &
+    strand_correlation >= 0.5 &
+    vmr > 0.01
+  )
+  p1 <- VariantPlot(variants = variable.sites,concordance.threshold=0.5)
+  print(p1)
+  if(nrow(high.conf)>1){
+  crc <- AlleleFreq(
+    object = obj,
+    variants = high.conf$variant,
+    assay = "mito"
+  )
+  DefaultAssay(crc) <- "alleles"
+  data<- GetAssayData(crc)
+  d_varition1=as.vector(data)
+  d_varition1=d_varition1[which(d_varition1!=0)]
+  data<- data.frame(variance=d_varition1)
+  data$variance<- data$variance;
+  p=ggplot(data,aes(x=variance))+
+  geom_histogram(
+                 binwidth = 0.1,
+                 fill="#69b3a2",##69b3a2
+                 color="#e9ecef",##e9ecef
+                 alpha=0.9,
+                 breaks=seq(0,1,0.1))+ 
+  theme_bw()+
+  labs(x="Frequence",y="Count",title=j)+
+  theme(plot.title = element_text(size = 18, vjust = 0.5, hjust = 0.5, face = "bold"),
+        axis.text.x = element_text(size=18,colour="black", face = "bold"),          
+        axis.text.y = element_text(size=18,colour="black", face = "bold"),
+        axis.title.x = element_text(size=14, face = "bold"), 
+        axis.title.y = element_text(size=14, face = "bold"),
+        panel.background = element_blank(),
+        line = element_line(size=1),
+        axis.line = element_line(size =1.0,colour = "black"),
+        panel.grid.major =element_blank(), panel.grid.minor = element_blank())+scale_x_continuous(limits = c(0,1),
+                     breaks = seq(0,1,0.2))
     print(p)
-}
+}}
 dev.off()
+
 
 Idents(combined)<- combined$detail_anno
 combined$mito_reads_rate<- (combined$mitochondrial/combined$total)*100
 library(scCustomize)
 
-pdf("./03_all_celltype/04_mgatk/all_cell_type_mtDNA_depth.pdf",width=16,height=10)
-#VlnPlot(combined, c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito","nCount_alleles","nFeature_alleles"), pt.size = 0,ncol=1) + scale_y_log10()
+pdf("./03_all_celltype/04_mgatk/all_cell_type_mtDNA_depth.pdf",width=20,height=10)
+VlnPlot(combined, c("mito_reads_rate","mtDNA_depth","nCount_alleles","nFeature_alleles"), pt.size = 0,ncol=1) + scale_y_log10()
 Stacked_VlnPlot(seurat_object = combined, features = c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito","nCount_alleles","nFeature_alleles"), x_lab_rotate = TRUE,
     colors_use = myUmapcolors)
 dev.off()
 
-# visulization signature of mutation 
-library(MutationalPatterns)
-library(BSgenome)
-head(available.genomes())
-ref_genome <- "BSgenome.Mmusculus.UCSC.mm10"
-library(ref_genome, character.only = TRUE)
+crc <- AlleleFreq(
+  object = crc,
+  variants = high.conf$variant,
+  assay = "mito"
+)
+crc[["alleles"]]
+DefaultAssay(crc) <- "alleles"
 
 
-# Annotate with called variants
-called_variants <- rowData(combined)$variant
-ref_all_long$called <- ref_all_long$variant %in% called_variants
-
-# Compute changes in expected/observed
-total <- dim(ref_all_long)[1]
-total_called <- sum(ref_all_long$called)
-prop_df <- ref_all_long %>% group_by(three_plot, group_change, strand) %>%
-  summarize(observed_prop_called = sum(called)/total_called, expected_prop = n()/total, n = n()) %>%
-  mutate(fc_called = observed_prop_called/expected_prop)
-
-prop_df$change_plot <- paste0(prop_df$group_change, "_", prop_df$three_plot)
-
-# Visualize
-p1 <- ggplot(prop_df, aes(x = change_plot, fill = strand, y = fc_called)) +
-  geom_bar(stat = "identity", position = "dodge") + pretty_plot(fontsize = 8) + L_border() + 
-  #theme(axis.title.x=element_blank(), axis.text.x =element_blank())+
-  scale_fill_manual(values= c("firebrick", "dodgerblue3")) +
-  theme(legend.position = "top",axis.text.x = element_text(angle = 90,vjust = 0.5,hjust = 0.5)) +
-  scale_y_continuous(expand = c(0,0)) +
-  geom_hline(yintercept = 1, linetype =2, color = "black") +
-  labs(x = "Change in nucleotide", y = "Substitution Rate (Expected / Observed)")
-cowplot::ggsave2(p1, file = "./all_mito_signature.pdf", width = 4, height = 2.4)
-
-
-
-
-mut_mat <- read.table("your_matrix.txt", sep = "\t", header = T)
-makeGRangesFromDataFrame
-GRangesList
-
-grl <- read_vcfs_as_granges(vcf_files, sample_names, ref_genome,group="circular", type = c("snv"))
-time <- c(rep("AR3", 2), rep("AR7", 2))
-#snv_grl <- get_mut_type(grl, type = "snv")
-muts <- mutations_from_vcf(grl[[1]])
-head(muts, 12)
-library("gridExtra")
-mut_mat <- mut_matrix(vcf_list = grl, ref_genome = ref_genome)
-head(mut_mat)
-pdf("./All_Sample_96_profile.pdf",width=12,height=6)
-plot_96_profile(mut_mat[, 1:4])
+pdf("CM_feature_all_celltype.pdf",height=4,width=16)
+DefaultAssay(obj) <- "alleles"
+alleles.view <- c("6785G>A", "9581C>T", "6886C>T", "12892C>T")
+FeaturePlot(
+  object = obj,
+  features = alleles.view,
+  order = TRUE,
+  cols = c("grey", "darkred"),
+  ncol = 4
+) 
+FeaturePlot(
+  object = combined,
+  features = alleles.view,
+  order = TRUE,
+  cols = c("grey", "darkred"),
+  ncol = 4
+) 
 dev.off()
 
 
-#Strand bias profile
-library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-genes_hg19 <- genes(TxDb.Mmusculus.UCSC.mm10.knownGene)
-strand <- mut_strand(grl[[1]], genes_hg19)
-head(strand, 10)
-mut_mat_s <- mut_matrix_stranded(grl, ref_genome, genes_hg19)
-mut_mat_s[1:5, 1:5]
+CM<- subset(combined,idents="CM")
+  variable.sites <- IdentifyVariants(CM, assay = "mito", refallele = AR3_C4_mito.data$refallele)
+  high.conf <- subset(
+  variable.sites, 
+  subset = n_cells_conf_detected >= 5 &
+    strand_correlation >= 0.5 &
+    vmr > 0.01
+  )
+  high.conf<- high.conf[order(high.conf$mean,decreasing=T),]
+high.conf[1:4,c(1,2,5)]
 
-pdf("./All_Sample_192_profile.pdf",width=12,height=6)
-plot_192_profile(mut_mat_s[, 1:4])
-dev.off()
+  crc <- AlleleFreq(
+    object = CM,
+    variants = high.conf$variant,
+    assay = "mito"
+  )
+  DefaultAssay(crc) <- "alleles"
 
-# crc <- AlleleFreq(
-#   object = crc,
-#   variants = high.conf$variant,
-#   assay = "mito"
-# )
-# crc[["alleles"]]
-# DefaultAssay(crc) <- "alleles"
-# crc <- FindClonotypes(crc)
-# pdf("./03_all_celltype/04_mgatk/VariantPlot_global_heatmap.pdf",width=10,height=10)
-# DoHeatmap(crc, features = VariableFeatures(crc), slot = "data", disp.max = 0.1) +  scale_fill_viridis_c()
-# dev.off()
-
-# pdf("./03_all_celltype/04_mgatk/Variant_Featureplot.pdf")
-# alleles.view <- c("12889G>A", "16147C>T", "9728C>T", "9804G>A")
-# FeaturePlot(
-#   object = crc,
-#   features = alleles.view,
-#   order = TRUE,
-#   cols = c("grey", "darkred"),
-#   ncol = 4
-# ) & NoLegend()
-# dev.off()
-
-#
-
-#
-#crc$log10_mtDNA_depth <- log10(crc$mtDNA_depth)
-#FeaturePlot(crc, features = c("pct_reads_in_DNase"))
-#FeaturePlot(crc, features = c("log10_mtDNA_depth"))
-#source("variant_calling.R") 
-#
-## mgatk_se is the Summarized Experiment .rds file
-## That is automatically produced from running
-## The mgatk CLI python package 
-#
-#mut_se <- call_mutations_mgatk(mgatk_se)
+  data<- GetAssayData(crc)
+  d_varition1=as.vector(data)
+  d_varition1=d_varition1[which(d_varition1!=0)]
+  data<- data.frame(variance=d_varition1)
+  data$variance<- data$variance
+  p=ggplot(data,aes(x=variance))+
+  geom_histogram(
+                 binwidth = 0.1,
+                 fill="#69b3a2",##69b3a2
+                 color="#e9ecef",##e9ecef
+                 alpha=0.9,
+                 breaks=seq(0,1,0.1))+ 
+  theme_bw()+
+  labs(x="Frequence",y="Count",title=j)+
+  theme(plot.title = element_text(size = 18, vjust = 0.5, hjust = 0.5, face = "bold"),
+        axis.text.x = element_text(size=18,colour="black", face = "bold"),          
+        axis.text.y = element_text(size=18,colour="black", face = "bold"),
+        axis.title.x = element_text(size=14, face = "bold"), 
+        axis.title.y = element_text(size=14, face = "bold"),
+        panel.background = element_blank(),
+        line = element_line(size=1),
+        axis.line = element_line(size =1.0,colour = "black"),
+        panel.grid.major =element_blank(), panel.grid.minor = element_blank())+scale_x_continuous(limits = c(0,1),
+                     breaks = seq(0,1,0.2))
+    print(p)
 
 
 

@@ -115,6 +115,7 @@ p2<- DimPlot(scRNA, label = TRUE,repel = TRUE) + NoLegend()
 p1+p2
 dev.off()
 
+
 # modify the annotation in scRNA 
 # 11-- pericyte
 # 19-- Epi
