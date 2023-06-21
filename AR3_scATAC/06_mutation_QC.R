@@ -191,6 +191,9 @@ Stacked_VlnPlot(seurat_object = combined, features = c("mito_reads_rate","mtDNA_
     colors_use = myUmapcolors)
 dev.off()
 
+
+
+
 crc <- AlleleFreq(
   object = crc,
   variants = high.conf$variant,
@@ -218,6 +221,11 @@ FeaturePlot(
   ncol = 4
 ) 
 dev.off()
+
+
+
+
+
 
 
 CM<- subset(combined,idents="CM")

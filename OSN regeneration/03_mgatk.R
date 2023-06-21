@@ -25,6 +25,7 @@ VlnPlot(OSN, c("mtDNA_depth","nCount_mito","nFeature_mito"), pt.size = 0,ncol=1)
 dev.off()
 saveRDS(OSN,"./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
 
+OSN<- readRDS("./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
 # 1. mtDNA coverage among celltype 
 # load mgatk output
 cov.data <- read.table(gzfile("/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/mgatk_for_filtered_cells/final/OSN.coverage.txt.gz"),sep=",")
@@ -45,6 +46,18 @@ colnames(df)<- c("pos","celltype","coverage")
 
 # Mean coverage X
 aggregate(mdf$coverage,by=list(mdf$celltype),mean)
+           Group.1         x
+1              HBC  7.435169
+2           actGBC  5.048911
+3              GBC  6.581020
+4     immatureOSNs  7.833693
+5    Sustentacular 16.292197
+6   respiratoryHBC 11.432890
+7        BrushCell 10.179746
+8       matureOSNs  7.395644
+9           actHBC  9.620186
+10 MicrovillarCell 11.431367
+11             INP 10.242323
 
 # the coverage plot 
 library(ComplexHeatmap)
@@ -74,8 +87,8 @@ myUmapcolors <- c(  '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476
 P1 <- ggplot(df, aes(x = pos, y = coverage, color = celltype)) + 
   geom_line() +  expand_limits(y = c(-5, 4)) +
   pretty_plot(fontsize = 8)  + scale_color_manual(values = myUmapcolors[1:11]) +
-  coord_polar(direction = 1) + labs(x = "", y = "Coverage") + scale_y_log10() +
-  theme(legend.position = "none")
+  coord_polar(direction = 1) + labs(x = "", y = "Coverage") + scale_y_log10() #+
+  #theme(legend.position = "none")
 cowplot::ggsave2(P1, file = "./03_All_celltype/02_mgatk/All_celltype_rollMean_coverage.pdf", width = 4, height = 4)
 
 # IdentifyVariants
@@ -91,7 +104,7 @@ dev.off()
 # Establish a filtered data frame of variants based on this processing
 high.conf <- subset(
   variable.sites, 
-  subset = n_cells_conf_detected >= 5 &
+  subset = n_cells_conf_detected >= 2 &
     strand_correlation >= 0.65 &
     vmr > 0.01
 )
@@ -99,6 +112,12 @@ high.conf<- high.conf[order(high.conf$mean,decreasing=T),]
 high.conf[,c(1,2,5)]
 # global VAF distribution of mutation 
 # the mutation freq barplot 
+OSN <- AlleleFreq(
+    object = OSN,
+    variants = high.conf$variant,
+    assay = "mito"
+)
+
 DefaultAssay(OSN)<- "alleles"
 data<- as.numeric(GetAssayData(OSN))
 data<- data[data!=0]
@@ -134,10 +153,10 @@ for (j in levels(OSN)){
   high.conf <- subset(
   variable.sites, 
   subset = n_cells_conf_detected >= 5 &
-    strand_correlation >= 0.5 &
+    strand_correlation >= 0.65 &
     vmr > 0.01
   )
-  p1 <- VariantPlot(variants = variable.sites,concordance.threshold=0.5)
+  p1 <- VariantPlot(variants = variable.sites,concordance.threshold=0.65)
   print(p1)
   if(nrow(high.conf)>1){
   crc <- AlleleFreq(
@@ -175,12 +194,22 @@ for (j in levels(OSN)){
 dev.off()
 
 Idents(OSN)<- OSN$Annotation
-OSN$mito_reads_rate<- (OSN$mitochondrial/OSN$total)*100
+OSN$mito_reads_rate<- (OSN$atac_mitochondrial_reads/OSN$atac_fragments)*100
 library(scCustomize)
 
 pdf("./03_All_celltype/02_mgatk/all_cell_type_mtDNA_depth.pdf",width=20,height=10)
-VlnPlot(OSN, c("mito_reads_rate","mtDNA_depth","nCount_alleles","nFeature_alleles"), pt.size = 0,ncol=1) + scale_y_log10()
+VlnPlot(OSN, c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito"), pt.size = 0,ncol=1) + scale_y_log10()
 Stacked_VlnPlot(seurat_object = OSN, features = c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito","nCount_alleles","nFeature_alleles"), x_lab_rotate = TRUE,
     colors_use = myUmapcolors)
 dev.off()
+saveRDS(OSN,"./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
+
+DefaultAssay(OSN) <- "mito"
+OSN <- FindClonotypes(OSN)
+
+
+
+
+
+
 

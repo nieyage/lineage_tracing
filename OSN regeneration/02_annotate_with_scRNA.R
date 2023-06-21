@@ -196,7 +196,7 @@ peak<-CallPeaks(
        format = "BED",
        fragment.tempdir = tempdir(),
        effective.genome.size = 2.7e+09,
-       outdir="./03_all_celltype/01_recall_peak/",
+       outdir="./03_All_celltype/01_recall_peak/",
        combine.peaks=TRUE
 )
 macs2_counts <- FeatureMatrix(
@@ -228,7 +228,7 @@ OSN <- LinkPeaks(
 )
 ######Visulize track and RNA exp######
 idents.plot <- Idents(OSN)
-pdf("./03_all_celltype/Marker_gene-peaktrack-RNAexp.pdf",height=16,width=8)
+pdf("./03_All_celltype/Marker_gene-peaktrack-RNAexp.pdf",height=16,width=8)
 for(i in features){
   print(i)
   p1 <- CoveragePlot(
@@ -243,5 +243,10 @@ for(i in features){
 )
 print(p1)}
 dev.off()
-saveRDS(OSN,"./03_all_celltype/OSN_all_celltype_annotated_recall_peak.rds")
+saveRDS(OSN,"./03_All_celltype/OSN_all_celltype_annotated_recall_peak.rds")
+
+
+
+
+
 
