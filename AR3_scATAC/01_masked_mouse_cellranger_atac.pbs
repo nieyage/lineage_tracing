@@ -112,5 +112,22 @@ mgatk tenx -i /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3
 -n AR3_C5_scATAC -g /md01/nieyg/ref/hard-mask/genome_modify/assembly_hardmask_chrM.fasta \
 -c 16 -bt CB -b /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/mgatk_for_filtered_cells/barcode.tsv
 
+# 2023-06-28
+# cell ranger
+# AR3_C4 add to 500G
+#PBS -N masked_mouse
+#PBS -j oe
+#PBS -q batch
+#PBS -S /bin/sh
+#PBS -l nodes=1:ppn=32
+#PBS -l mem=30G
+source /public/home/nieyg/.bash_profile
+cd /md01/nieyg/project/lineage_tracing/scATAC/
+cellranger-atac count --id=AR3_C5_scATAC_add500G \
+                        --reference=/md01/nieyg/ref/hard-mask/mm10_hard_masked \
+                        --fastqs=/data/R03/zhangwx/rawdata/mouse/Yage-mouse/AR3/AR3_C4/ \
+                        --sample=AR3_C4 \
+                        --localcores=32 \
+                        --localmem=64
 
 
