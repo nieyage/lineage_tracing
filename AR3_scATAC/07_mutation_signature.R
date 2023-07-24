@@ -14,7 +14,7 @@ reverse_complement <- function(s){
 }
 
 # Process 3 digit signature based on letters
-ref_all <- fread("/data/R02/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/mgatk_for_filtered_cells/final/chrM_refAllele.txt")
+ref_all <- fread("/data/R02/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk/final/chrM_refAllele.txt")
 colnames(ref_all) <- c("pos", "ref")
 ref_all$ref <- toupper(ref_all$ref)
 l <- as.character(ref_all$ref)
@@ -46,7 +46,7 @@ ref_all_long$group_change <- ifelse(ref_all_long$strand == "L", ref_all_long$cha
 
 # Annotate with called variants
 
-AR3_C4_mito.data <- ReadMGATK(dir = "~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/mgatk_for_filtered_cells/final/")
+AR3_C4_mito.data <- ReadMGATK(dir = "~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk/final/")
 crc <- combined
 variable.sites <- IdentifyVariants(crc, assay = "mito", refallele = AR3_C4_mito.data$refallele)
 high.conf <- subset(
@@ -77,5 +77,5 @@ p1 <- ggplot(prop_df, aes(x = change_plot, fill = strand, y = fc_called)) +
   scale_y_continuous(expand = c(0,0)) +
   geom_hline(yintercept = 1, linetype =2, color = "black") +
   labs(x = "Change in nucleotide", y = "Substitution Rate (Expected / Observed)")
-cowplot::ggsave2(p1, file = "./all_mito_signature.pdf", width = 4, height = 2.4)
+cowplot::ggsave2(p1, file = "./03_all_celltype/04_mgatk/all_mito_signature.pdf", width = 4, height = 2.4)
 #

@@ -42,6 +42,18 @@ aggregate(mdf$coverage,by=list(mdf$celltype),mean)
       Gra  9.830597
     Glial 21.240215
 
+    Group.1         x
+1        CM 138.06156
+2        EC  70.39132
+3        FB  71.18737
+4       Epi  79.69656
+5       SMC  49.34997
+6  Pericyte  65.26232
+7     MP_DC  34.72111
+8         T  38.85539
+9         B  49.21432
+10    Glial  45.76064
+
 # the coverage plot 
 library(ComplexHeatmap)
 library(GenomeInfoDb)
@@ -91,7 +103,6 @@ VariantPlot(variants = variable.sites)
 dev.off()
 
 # all celltype mutation 
-# No homoplasmic mutation?---> sequence depth not enough!
 
 # Establish a filtered data frame of variants based on this processing
 high.conf <- subset(
@@ -102,6 +113,14 @@ high.conf <- subset(
 )
 high.conf<- high.conf[order(high.conf$mean,decreasing=T),]
 high.conf[,c(1,2,5)]
+crc <- AlleleFreq(
+    object = crc,
+    variants = high.conf$variant,
+    assay = "mito"
+  )
+saveRDS(crc,"./03_all_celltype/04_mgatk/all_cell_type_mgatk_alleles.rds")
+
+combined<- crc
 # global VAF distribution of mutation 
 # the mutation freq barplot 
 DefaultAssay(combined)<- "alleles"

@@ -194,7 +194,7 @@ for (j in levels(OSN)){
 dev.off()
 
 Idents(OSN)<- OSN$Annotation
-OSN$mito_reads_rate<- (OSN$atac_mitochondrial_reads/OSN$atac_fragments)*100
+OSN$mito_reads_rate<- (OSN$atac_mitochondrial_reads/OSN$atac_raw_reads)*100
 library(scCustomize)
 
 pdf("./03_All_celltype/02_mgatk/all_cell_type_mtDNA_depth.pdf",width=20,height=10)
@@ -207,6 +207,20 @@ saveRDS(OSN,"./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
 DefaultAssay(OSN) <- "mito"
 OSN <- FindClonotypes(OSN)
 
+
+
+OSN2 <- AlleleFreq(OSN, variants = high.conf$variant, assay = "mito")
+OSN[["alleles"]]
+DefaultAssay(OSN) <- "alleles"
+
+DoHeatmap(OSN, features = rownames(high.conf), disp.max = 0.1) +scale_fill_viridis_c()
+
+
+
+
+fastqs,sample,library_type
+/md01/pengdj3/WT_mNeu/workdir/GEX_fastq,mNeu12-RNA,Gene Expression
+/md01/pengdj3/WT_mNeu/workdir/ATAC_fastq,mNeu12-ATAC,Chromatin Accessibility
 
 
 

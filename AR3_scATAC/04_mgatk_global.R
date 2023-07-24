@@ -4,15 +4,10 @@ library(GenomicRanges)
 library(future)
 library(ggplot2)
 combined<- readRDS("./03_all_celltype/03_recall_peak/AR3_integrated_all_celltype_annotated_recall_peak.rds")
-AR3_C4_last<- readRDS("./03_all_celltype/AR3_C4_scATAC.rds")
-AR3_C5_last<- readRDS("./03_all_celltype/AR3_C5_scATAC.rds")
-
-write.table(colnames(AR3_C4_last),"/barcode.tsv",row.names=F,col.names=F)
-write.table(colnames(AR3_C5_last),"~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/mgatk_for_filtered_cells/barcode.tsv",row.names=F,col.names=F)
 
 # load mgatk output
-AR3_C4_mito.data <- ReadMGATK(dir = "~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/mgatk_for_filtered_cells/final/")
-AR3_C5_mito.data <- ReadMGATK(dir = "~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/mgatk_for_filtered_cells/final/")
+AR3_C4_mito.data <- ReadMGATK(dir = "~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk/final/")
+AR3_C5_mito.data <- ReadMGATK(dir = "~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk/final/")
 
 # create an assay
 AR3_C4_mito_counts<- AR3_C4_mito.data$counts
@@ -37,4 +32,7 @@ Idents(combined)<- combined$detail_anno
 pdf("./03_all_celltype/04_mgatk/all_cell_type_mtDNA_depth.pdf",width=16,height=8)
 VlnPlot(combined, c("mtDNA_depth","nCount_mito","nFeature_mito"), pt.size = 0,ncol=1) + scale_y_log10()
 dev.off()
-saveRDS(crc,"./03_all_celltype/04_mgatk/all_cell_type_mgatk.rds")
+saveRDS(combined,"./03_all_celltype/04_mgatk/all_cell_type_mgatk.rds")
+
+
+

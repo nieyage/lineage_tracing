@@ -169,38 +169,47 @@ Idents(combined)<-combined$seurat_clusters
 combined <- RenameIdents(
   object = combined,
   '0' = 'MP_DC',
-  '1' = 'EC',
-  '2' = 'MP_DC',
-  '3' = 'EC',
-  '4' = 'CM',
-  '5' = 'MP_DC',
-  '6' = 'FB',
+  '1' = 'MP_DC',
+  '2' = 'FB',
+  '3' = 'MP_DC',
+  '4' = 'EC',
+  '5' = 'CM',
+  '6' = 'CM',
   '7' = 'FB',
-  '8' = 'CM',
-  '9' = 'FB',
-  '10' = 'FB',
+  '8' = 'EC',
+  '9' = 'CM',
+  '10' = 'CM',
   '11' = 'FB',
-  '12' = 'CM',
+  '12' = 'FB',
   '13' = 'FB',
   '14' = 'Pericyte',
-  '15' = 'EC',
+  '15' = 'FB',
   '16' = 'FB',
-  '17' = 'FB',
-  '18' = 'Epi',
-  '19' = 'MP_DC',
-  '20' = 'T',
-  '21' = 'Gra',
-  '22' = 'Epi',
-  '23' = 'MP_DC',
+  '17' = 'EC',
+  '18' = 'Granulocy',
+  '19' = 'FB',
+  '20' = 'MP_DC',
+  '21' = 'Epi',
+  '22' = 'EC',
+  '23' = 'T',
   '24' = 'FB',
-  '25' = 'FB',
+  '25' = 'MP_DC',
   '26' = 'SMC',
-  '27' = 'FB',
-  '28' = 'SMC',
-  '29' = 'EC',
-  '30' = 'B',
-  '31' = 'EC',
-  '32' = 'Glial'
+  '27' = 'EC',
+  '28' = 'MP_DC',
+  '29' = 'Epi',
+  '30' = 'CM',
+  '31' = 'Epi',
+  '32' = 'FB',
+  '33' = 'EC',
+  '34' = 'SMC',
+  '35' = 'B',
+  '36' = 'T',
+  '37' = 'MP_DC',
+  '38' = 'Glial',
+  '39' = 'EC',
+  '40' = 'MP_DC',
+  '41' = 'MP_DC'
   )
 combined@meta.data$Annotation<-Idents(combined)
 table(combined$Annotation,combined$orig.ident)
@@ -322,4 +331,16 @@ print(p1)}
 dev.off()
 
 saveRDS(combined,"./03_all_celltype/03_recall_peak/AR3_integrated_all_celltype_annotated_recall_peak.rds")
+
+new_Cells<- colnames(combined)
+old_combined<- readRDS("/data/R02/nieyg/project/lineage_tracing/heart_regeneration/01_AR3_scATAC/03_all_celltype/03_recall_peak/AR3_integrated_all_celltype_annotated_recall_peak.rds")
+old_Cells<- colnames(old_combined)
+
+cluster27_cells<- rownames(old_combined@meta.data[old_combined@meta.data$detail_anno=="27:FB",])
+
+
+data<- old_combined@meta.data[old_combined@meta.data$detail_anno=="27:FB",]
+
+
+
 

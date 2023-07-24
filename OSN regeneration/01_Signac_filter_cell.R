@@ -6,17 +6,17 @@ library(ggplot2)
 library(patchwork)
 set.seed(1234)
 
-counts <- Read10X_h5("/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/outs/filtered_feature_bc_matrix.h5")
+counts <- Read10X_h5("/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/filtered_feature_bc_matrix.h5")
 
 OSN_assay <- CreateChromatinAssay(
   counts = counts$Peaks,
   sep = c(":", "-"),
   genome = "mm10",
-  fragments = '/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/outs/atac_fragments.tsv.gz',
+  fragments = '/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/atac_fragments.tsv.gz',
   min.cells= 10, min.features=200
   )
 metadata <- read.csv(
-  file = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/outs/per_barcode_metrics.csv",
+  file = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/per_barcode_metrics.csv",
   header = TRUE,
   row.names = 1
 )
@@ -81,7 +81,7 @@ OSN <- subset(
 library(ArchR)
 addArchRThreads(threads = 1) 
 addArchRGenome("mm10")
-inputFiles <- "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/outs/atac_fragments.tsv.gz"
+inputFiles <- "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/atac_fragments.tsv.gz"
 names(inputFiles)<-"OSN"
 
 ArrowFiles <- createArrowFiles(

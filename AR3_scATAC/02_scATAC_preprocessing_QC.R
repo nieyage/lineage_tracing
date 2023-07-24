@@ -9,11 +9,11 @@ library(ggplot2)
 # combine peaksets 
 # read in peak sets
 peaks.AR3_C4_scATAC <- read.table(
-  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/outs/peaks.bed",
+  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/outs/peaks.bed",
   col.names = c("chr", "start", "end")
 )
 peaks.AR3_C5_scATAC <- read.table(
-  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/outs/peaks.bed",
+  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/outs/peaks.bed",
   col.names = c("chr", "start", "end")
 )
 # convert to genomic ranges
@@ -30,7 +30,7 @@ combined.peaks
 
 # load metadata
 md.AR3_C4_scATAC <- read.table(
-  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/outs/singlecell.csv",
+  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/outs/singlecell.csv",
   stringsAsFactors = FALSE,
   sep = ",",
   header = TRUE,
@@ -38,7 +38,7 @@ md.AR3_C4_scATAC <- read.table(
 )[-1, ] # remove the first row
 
 md.AR3_C5_scATAC <- read.table(
-  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/outs/singlecell.csv",
+  file = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/outs/singlecell.csv",
   stringsAsFactors = FALSE,
   sep = ",",
   header = TRUE,
@@ -51,11 +51,11 @@ md.AR3_C5_scATAC <- md.AR3_C5_scATAC[md.AR3_C5_scATAC$passed_filters > 500, ]
 
 # create fragment objects
 frags.AR3_C4_scATAC <- CreateFragmentObject(
-  path = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/outs/fragments.tsv.gz",
+  path = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/outs/fragments.tsv.gz",
   cells = rownames(md.AR3_C4_scATAC)
 )
 frags.AR3_C5_scATAC <- CreateFragmentObject(
-  path = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/outs/fragments.tsv.gz",
+  path = "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/outs/fragments.tsv.gz",
   cells = rownames(md.AR3_C5_scATAC)
 )
 
@@ -75,11 +75,20 @@ AR3_C4 <- CreateSeuratObject(AR3_C4_assay, assay = "ATAC", meta.data=md.AR3_C4_s
 
 AR3_C5_assay <- CreateChromatinAssay(AR3_C5_scATAC.counts, fragments = frags.AR3_C5_scATAC)
 AR3_C5 <- CreateSeuratObject(AR3_C5_assay, assay = "ATAC", meta.data=md.AR3_C5_scATAC)
+saveRDS(AR3_C4,"./01_qc/AR3_C4_raw.rds")
+saveRDS(AR3_C5,"./01_qc/AR3_C5_raw.rds")
+
+write.table(colnames(AR3_C4),"~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk/barcode.tsv",row.names=F,col.names=F)
+write.table(colnames(AR3_C5),"~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk/barcode.tsv",row.names=F,col.names=F)
 
 ###############################
 # 2. calculate the qc feature #
 ###############################
+AR3_C4<- readRDS("./01_qc/AR3_C4_raw.rds")
+AR3_C5<- readRDS("./01_qc/AR3_C5_raw.rds")
+
 # extract gene annotations from EnsDb
+library(EnsDb.Mmusculus.v79)
 annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Mmusculus.v79)
 # change to UCSC style since the data was mapped to hg19
 seqlevelsStyle(annotations) <- 'UCSC'
@@ -151,8 +160,8 @@ for (i in seq_len(length(objList))) {
 library(ArchR)
 addArchRThreads(threads = 1) 
 addArchRGenome("mm10")
-inputFiles <- c("/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/outs/fragments.tsv.gz",
-  "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC/outs/fragments.tsv.gz")
+inputFiles <- c("/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/outs/fragments.tsv.gz",
+  "/md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/outs/fragments.tsv.gz")
 names(inputFiles)<- c("AR3_C4","AR3_C5")
 ArrowFiles <- createArrowFiles(
   inputFiles = inputFiles,
@@ -196,15 +205,12 @@ filterDoublets_C4<- gsub("AR3_C4#","",filterDoublets_C4)
 filterDoublets_C5<- projHeme2$cellNames[grep("AR3_C5",projHeme2$cellNames)]
 filterDoublets_C5<- gsub("AR3_C5#","",filterDoublets_C5)
 
-
-
 ##############################################
 # 4. filter cells (low quality and doublets) #
 ##############################################
 
 # filter out low quality cells
 # To remove doublets,select different cutoff#####
-# NE 
   objList2<-c()
   objList2[[1]]<-subset(x=objList[[1]],
    subset = nCount_ATAC < 100000 &nCount_ATAC > 1000 &
@@ -215,7 +221,7 @@ filterDoublets_C5<- gsub("AR3_C5#","",filterDoublets_C5)
     pct_reads_in_peaks > 25 
     )
   print(objList2[[1]])
-# Nurse 
+
   objList2[[2]]<-subset(x=objList[[2]],
    subset = nCount_ATAC < 100000 &nCount_ATAC > 1000 &
     nucleosome_signal < 4 &
