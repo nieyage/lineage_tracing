@@ -120,19 +120,21 @@ crc <- AlleleFreq(
   )
 saveRDS(crc,"./03_all_celltype/04_mgatk/all_cell_type_mgatk_alleles.rds")
 
-combined<- crc
+
+combined<- readRDS("./03_all_celltype/04_mgatk/all_cell_type_mgatk_alleles.rds")
 # global VAF distribution of mutation 
 # the mutation freq barplot 
 DefaultAssay(combined)<- "alleles"
 data<- as.numeric(GetAssayData(combined))
 data<- data[data!=0]
 data<- data.frame(variance=data)
+
 data$variance<- data$variance*100;
 for(i in 1:nrow(data)){
 	if(data$variance[i] < 0.1){data$VAF[i]<- "0.0-0.1%"}
 	if(data$variance[i] >0.1  && data$variance[i] < 0.5){data$VAF[i]<- "0.1-0.5%"}
-	if(data$variance[i] >0.5  && data$variance[i] < 1){data$VAF[i]<- "0.5-1%"}
-	if(data$variance[i] >1    && data$variance[i] < 90){data$VAF[i]<- "1-90%"}
+	if(data$variance[i] >0.5  && data$variance[i] < 1)  {data$VAF[i]<- "0.5-1%"}
+	if(data$variance[i] >1    && data$variance[i] < 90) {data$VAF[i]<- "1-90%"}
 	if(data$variance[i] >90   && data$variance[i] < 100){data$VAF[i]<- "90-100%"}
 }
 
@@ -151,7 +153,7 @@ dev.off()
 # VAF distribution of mutation in difference celltype 
 # the mutation freq barplot 
 Idents(combined)<- combined$Annotation
-pdf("./03_all_celltype/04_mgatk/celltype_mutation_freq.pdf",width=5,height=3)
+pdf("./03_all_celltype/04_mgatk/celltype_mutation_freq.pdf",width=10,height=6)
 for (j in levels(combined)){
 	print(j);
 	obj<- subset(combined,idents=j)
@@ -159,7 +161,7 @@ for (j in levels(combined)){
   high.conf <- subset(
   variable.sites, 
   subset = n_cells_conf_detected >= 5 &
-    strand_correlation >= 0.5 &
+    strand_correlation >= 0.65 &
     vmr > 0.01
   )
   p1 <- VariantPlot(variants = variable.sites,concordance.threshold=0.5)
@@ -213,39 +215,6 @@ dev.off()
 
 
 
-crc <- AlleleFreq(
-  object = crc,
-  variants = high.conf$variant,
-  assay = "mito"
-)
-crc[["alleles"]]
-DefaultAssay(crc) <- "alleles"
-
-
-pdf("CM_feature_all_celltype.pdf",height=4,width=16)
-DefaultAssay(obj) <- "alleles"
-alleles.view <- c("6785G>A", "9581C>T", "6886C>T", "12892C>T")
-FeaturePlot(
-  object = obj,
-  features = alleles.view,
-  order = TRUE,
-  cols = c("grey", "darkred"),
-  ncol = 4
-) 
-FeaturePlot(
-  object = combined,
-  features = alleles.view,
-  order = TRUE,
-  cols = c("grey", "darkred"),
-  ncol = 4
-) 
-dev.off()
-
-
-
-
-
-
 
 CM<- subset(combined,idents="CM")
   variable.sites <- IdentifyVariants(CM, assay = "mito", refallele = AR3_C4_mito.data$refallele)
@@ -290,6 +259,46 @@ high.conf[1:4,c(1,2,5)]
         panel.grid.major =element_blank(), panel.grid.minor = element_blank())+scale_x_continuous(limits = c(0,1),
                      breaks = seq(0,1,0.2))
     print(p)
+
+
+library(SummarizedExperiment)
+library(Matrix)
+
+# Function that quickly computes the allele frequency matrix from a summarized experiment mgatk object
+computeAFMutMatrix <- function(SE){
+  cov <- assays(SE)[["coverage"]]+ 0.001
+  ref_allele <- as.character(rowRanges(SE)$refAllele)
+  getMutMatrix <- function(letter){
+    mat <- (assays(SE)[[paste0(letter, "_counts_fw")]] + assays(SE)[[paste0(letter, "_counts_rev")]]) / cov
+    rownames(mat) <- paste0(as.character(1:dim(mat)[1]), toupper(ref_allele), ">", letter)
+    return(mat[toupper(ref_allele) != letter,])
+  }
+  rbind(getMutMatrix("A"), getMutMatrix("C"), getMutMatrix("G"), getMutMatrix("T"))
+}
+
+
+library(data.table)
+library(dplyr)
+# Pretty simple plot... plotting distribution of heteroplasmy for top variants
+pt1_vars <- readRDS("../output/PT1_specificVariants_forSupplement.rds")
+pt2_vars <- readRDS("../output/PT2_specificVariants_forSupplement.rds")
+plot_df <- data.frame(
+  het = c(pt1_vars$X5140G.A, pt1_vars$X14858G.A,
+          pt1_vars$X1872T.C, pt1_vars$X1260A.G,
+          pt2_vars$X12980G.A, pt2_vars$X4853G.A) * 100,
+  mut = c(rep("5140G>A", dim(pt1_vars)[1]), rep("14858G>A", dim(pt1_vars)[1]), 
+          rep("1872T>C", dim(pt1_vars)[1]), rep("1260A>G", dim(pt1_vars)[1]), 
+          rep("12980G>A", dim(pt2_vars)[1]), rep("4853G>A", dim(pt2_vars)[1]))
+)
+plot_df$mut <- factor(as.character(plot_df$mut), levels = c("5140G>A", "14858G>A", "4853G>A", "1872T>C", "1260A>G", "12980G>A"))
+p1 <- ggplot(plot_df, aes(x = het)) +
+  geom_histogram(binwidth = 10, fill = "black") + facet_wrap(~mut ) +
+  pretty_plot(fontsize = 7) 
+cowplot::ggsave2(p1, file = "../plots/mut_histograms.pdf",width = 3.5, height = 1.8)
+
+# For red number in the supplement
+plot_df %>% group_by(mut) %>% summarize(count = sum(het >= 90))
+
 
 
 

@@ -142,6 +142,38 @@ mgatk tenx -i /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3
 
 
 
+# mgatk realign done!
+
+# Step1: merge the all qc_bam files and sort the last bam file 
+nohup samtools merge merged.qc.bam barcodes*qc.bam &
+nohup samtools sort -@8 merged.qc.bam -o merged.qc.sorted.bam & 
+
+
+
+
+
+
+
+
+
+
+mgatk bcall -i barcode/test_barcode.bam -n bc1 -o bc1d -bt CB -b barcode/test_barcodes.txt -z
+
+
+mgatk bcall -i barcode/test_barcode.bam -n bc1 -o bc1d -bt CB -b barcode/test_barcodes.txt -z
+mgatk tenx -i barcode/test_barcode.bam -n bc1 -o bc1dmem -bt CB -b barcode/test_barcodes.txt -c 5 -z 
+
+
+
+
+conda activate r4-base
+python3 -m venv venv_magatk_r4
+source /md01/nieyg/software/venv_magatk_r4/bin/activate
+
+maegatk bcall -i barcode/test_barcode.bam -n bc1 -o bc1d_magatk222 -bt CB -b barcode/test_barcodes.txt -z
+
+
+
 
 
 

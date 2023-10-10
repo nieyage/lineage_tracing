@@ -57,3 +57,61 @@ samtools mpileup -l /md01/nieyg/software/MitoSort/data/hg38_chrM.bed -q 30 -Q 30
 -f /md01/nieyg/ref/10X/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/fasta/genome.fa \
 -x possorted_chrM_realign_0.2.bam -o possorted_chrM_realign_0.2.mpileup
 
+python /md01/nieyg/software/MitoSort/MitoSort_pipeline.py generate-snp-matrix \
+-b /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk/mito_sort_out/qc_bam/mgatk_merged.bam \
+-f /md01/nieyg/ref/10X/refdata-cellranger-arc-GRCh38-2020-A-2.0.0/fasta/genome.fa \
+-c /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/outs/singlecell.csv \
+-m /md01/nieyg/ref/hard-mask/genome_modify/chrM.len \
+--varscan_path /md01/nieyg/software/MitoSort/VarScan.v2.3.7.jar \
+-o /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mito_sort_out
+
+python /md01/nieyg/software/MitoSort/MitoSort_pipeline.py generate-snp-matrix \
+-b /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mito_sort_out/MitoSort/BAM/possorted_chrM_realign.bam \
+-f /md01/nieyg/ref/hard-mask/mm10_hard_masked/fasta/genome.fa \
+-c /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk/barcode.tsv \
+-m /md01/nieyg/ref/hard-mask/genome_modify/chrM.len \
+--varscan_path /md01/nieyg/software/MitoSort/VarScan.v2.3.7.jar \
+-o /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mito_sort_out
+
+
+
+## PBS configure 
+#PBS -N mitosort_C4
+#PBS -j oe
+#PBS -q batch
+#PBS -S /bin/sh
+#PBS -l nodes=1:ppn=16
+#PBS -l mem=32G
+
+source /public/home/nieyg/.bash_profile
+cd /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk_realign2/qc_bam
+
+
+python /md01/nieyg/software/MitoSort/MitoSort_pipeline.py generate-snp-matrix \
+-b /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk_realign2/qc_bam/possorted_chrM_realign.bam \
+-f /md01/nieyg/ref/hard-mask/mm10_hard_masked/fasta/genome.fa \
+-c /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk/barcode.tsv \
+-m /md01/nieyg/ref/hard-mask/genome_modify/chrM.len \
+--varscan_path /md01/nieyg/software/MitoSort/VarScan.v2.3.7.jar \
+-o /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC_add500G/mgatk_realign2/qc_bam
+
+
+## PBS configure 
+#PBS -N mitosort_C5
+#PBS -j oe
+#PBS -q batch
+#PBS -S /bin/sh
+#PBS -l nodes=1:ppn=10
+#PBS -l mem=32G
+
+source /public/home/nieyg/.bash_profile
+cd /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk_realign/qc_bam
+
+python /md01/nieyg/software/MitoSort/MitoSort_pipeline.py generate-snp-matrix \
+-b /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk_realign/qc_bam/possorted_chrM_realign.bam \
+-f /md01/nieyg/ref/hard-mask/mm10_hard_masked/fasta/genome.fa \
+-c /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk/barcode.tsv \
+-m /md01/nieyg/ref/hard-mask/genome_modify/chrM.len \
+--varscan_path /md01/nieyg/software/MitoSort/VarScan.v2.3.7.jar \
+-o /md01/nieyg/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C5_scATAC_add500G/mgatk_realign/qc_bam
+

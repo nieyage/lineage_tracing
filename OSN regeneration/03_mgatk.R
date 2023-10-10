@@ -5,10 +5,8 @@ library(future)
 library(ggplot2)
 OSN<- readRDS("./03_All_celltype/OSN_all_celltype_annotated_recall_peak.rds")
 
-write.table(colnames(OSN),"~/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/mgatk_for_filtered_cells/barcode.tsv",row.names=F,col.names=F)
-
 # load mgatk output
-mito.data <- ReadMGATK(dir = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/mgatk_for_filtered_cells/final/")
+mito.data <- ReadMGATK(dir = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/mgatk/final/")
 # create an assay
 mito_counts<- mito.data$counts
 mito <- CreateAssayObject(counts = mito_counts)
@@ -20,15 +18,15 @@ OSN[["mito"]] <- mito
 OSN <- AddMetaData(OSN, metadata = mito.data$depth, col.name = "mtDNA_depth")
 Idents(OSN)<- OSN$Annotation;
 
-pdf("./03_All_celltype/02_mgatk/all_cell_type_mtDNA_depth.pdf",width=16,height=8)
+pdf("./06_mgatk/all_cell_type_mtDNA_depth.pdf",width=16,height=8)
 VlnPlot(OSN, c("mtDNA_depth","nCount_mito","nFeature_mito"), pt.size = 0,ncol=1) + scale_y_log10()
 dev.off()
-saveRDS(OSN,"./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
+saveRDS(OSN,"./06_mgatk/all_cell_type_mgatk.rds")
 
-OSN<- readRDS("./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
+OSN<- readRDS("./06_mgatk/all_cell_type_mgatk.rds")
 # 1. mtDNA coverage among celltype 
 # load mgatk output
-cov.data <- read.table(gzfile("/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/mgatk_for_filtered_cells/final/OSN.coverage.txt.gz"),sep=",")
+cov.data <- read.table(gzfile("/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/mgatk/final/OSN_regeneration.coverage.txt.gz"),sep=",")
 
 # add prefix in barcode 
 cov.data$celltype<- OSN$Annotation[match(cov.data$V2,rownames(OSN@meta.data))]
@@ -46,6 +44,22 @@ colnames(df)<- c("pos","celltype","coverage")
 
 # Mean coverage X
 aggregate(mdf$coverage,by=list(mdf$celltype),mean)
+
+           Group.1        x
+1              HBC 21.64040
+2    Sustentacular 51.21861
+3     immatureOSNs 22.40051
+4              INP 28.49478
+5              GBC 23.71724
+6   respiratoryHBC 39.20327
+7  MicrovillarCell 38.93117
+8       matureOSNs 29.39529
+9        BrushCell 34.30040
+10          actGBC 16.52821
+
+
+
+
            Group.1         x
 1              HBC  7.435169
 2           actGBC  5.048911
@@ -83,20 +97,20 @@ myUmapcolors <- c(  '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476
          "#D9D9D9", "#BC80BD", "#CCEBC5", "#FFED6F", "#E41A1C", "#377EB8", "#4DAF4A", 
          "#FF7F00", "#FFFF33", "#A65628", "#F781BF")
 # Visualize the rolled means
-
+library(ggplot2)
 P1 <- ggplot(df, aes(x = pos, y = coverage, color = celltype)) + 
   geom_line() +  expand_limits(y = c(-5, 4)) +
   pretty_plot(fontsize = 8)  + scale_color_manual(values = myUmapcolors[1:11]) +
   coord_polar(direction = 1) + labs(x = "", y = "Coverage") + scale_y_log10() #+
   #theme(legend.position = "none")
-cowplot::ggsave2(P1, file = "./03_All_celltype/02_mgatk/All_celltype_rollMean_coverage.pdf", width = 4, height = 4)
+cowplot::ggsave2(P1, file = "./06_mgatk/All_celltype_rollMean_coverage.pdf", width = 4, height = 4)
 
 # IdentifyVariants
 # filter cells based on mitochondrial depth
-mito.data <- ReadMGATK(dir = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked/mgatk_for_filtered_cells/final/")
+mito.data <- ReadMGATK(dir = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/mgatk/final/")
 crc <- OSN
 variable.sites <- IdentifyVariants(crc, assay = "mito", refallele = mito.data$refallele)
-pdf("./03_All_celltype/02_mgatk/VariantPlot_global.pdf")
+pdf("./06_mgatk/VariantPlot_global.pdf")
 VariantPlot(variants = variable.sites)
 dev.off()
 
@@ -104,7 +118,7 @@ dev.off()
 # Establish a filtered data frame of variants based on this processing
 high.conf <- subset(
   variable.sites, 
-  subset = n_cells_conf_detected >= 2 &
+  subset = n_cells_conf_detected >= 5 &
     strand_correlation >= 0.65 &
     vmr > 0.01
 )
@@ -117,7 +131,9 @@ OSN <- AlleleFreq(
     variants = high.conf$variant,
     assay = "mito"
 )
+saveRDS(OSN,"./06_mgatk/all_cell_type_mgatk_add_alleles.rds")
 
+OSN<- readRDS("./06_mgatk/all_cell_type_mgatk_add_alleles.rds")
 DefaultAssay(OSN)<- "alleles"
 data<- as.numeric(GetAssayData(OSN))
 data<- data[data!=0]
@@ -131,7 +147,7 @@ for(i in 1:nrow(data)){
   if(data$variance[i] >90   && data$variance[i] < 100){data$VAF[i]<- "90-100%"}
 }
 
-pdf("./03_All_celltype/02_mgatk/All_celltype_mutation_freq.pdf",width=5,height=3)
+pdf("./06_mgatk/All_celltype_mutation_freq.pdf",width=5,height=3)
 ggplot(data=data,aes(x=VAF))+
 geom_histogram(stat="count",fill="#795885",color="#795885",alpha=0.8)+ 
 ylab("mtDNA mutations")+theme_bw()+xlab("% VAF")+
@@ -145,7 +161,7 @@ dev.off()
 # VAF distribution of mutation in difference celltype 
 # the mutation freq barplot 
 Idents(OSN)<- OSN$Annotation
-pdf("./03_All_celltype/02_mgatk/celltype_mutation_freq.pdf",width=5,height=3)
+pdf("./06_mgatk/celltype_mutation_freq.pdf",width=5,height=3)
 for (j in levels(OSN)){
   print(j);
   obj<- subset(OSN,idents=j)
@@ -197,30 +213,32 @@ Idents(OSN)<- OSN$Annotation
 OSN$mito_reads_rate<- (OSN$atac_mitochondrial_reads/OSN$atac_raw_reads)*100
 library(scCustomize)
 
-pdf("./03_All_celltype/02_mgatk/all_cell_type_mtDNA_depth.pdf",width=20,height=10)
+pdf("./06_mgatk/all_cell_type_mtDNA_depth.pdf",width=20,height=10)
 VlnPlot(OSN, c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito"), pt.size = 0,ncol=1) + scale_y_log10()
 Stacked_VlnPlot(seurat_object = OSN, features = c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito","nCount_alleles","nFeature_alleles"), x_lab_rotate = TRUE,
     colors_use = myUmapcolors)
 dev.off()
-saveRDS(OSN,"./03_All_celltype/02_mgatk/all_cell_type_mgatk.rds")
 
-DefaultAssay(OSN) <- "mito"
-OSN <- FindClonotypes(OSN)
-
-
-
-OSN2 <- AlleleFreq(OSN, variants = high.conf$variant, assay = "mito")
-OSN[["alleles"]]
 DefaultAssay(OSN) <- "alleles"
+OSN <- FindClonotypes(OSN,resolution = 1,assay="alleles",metric = "cosine",algorithm = 3)
+table(Idents(OSN))
+library(dittoSeq)
+OSN$Clonotypes<- Idents(OSN)
+pdf("./06_mgatk/all_cell_type_Findclonetype.pdf",width=20,height=10)
+DoHeatmap(OSN, draw.lines = FALSE,features = VariableFeatures(OSN)[1:200], slot = "data", disp.max = 0.1) +scale_fill_viridis_c()
+dittoHeatmap(OSN, scaled.to.max = TRUE, VariableFeatures(OSN)[1:200], annot.by = c("Clonotypes", "Annotation"))
+DoHeatmap(OSN,draw.lines = FALSE, features = VariableFeatures(OSN)[1:500], slot = "data", disp.max = 0.1) +scale_fill_viridis_c()
+dittoHeatmap(OSN, scaled.to.max = TRUE, VariableFeatures(OSN)[1:500], annot.by = c("Clonotypes", "Annotation"))
+dev.off()
 
-DoHeatmap(OSN, features = rownames(high.conf), disp.max = 0.1) +scale_fill_viridis_c()
 
+Idents(OSN)<- OSN$Annotation
+OSN$mito_reads_rate<- (OSN$atac_mitochondrial_reads/OSN$atac_raw_reads)*100
+library(scCustomize)
 
-
-
-fastqs,sample,library_type
-/md01/pengdj3/WT_mNeu/workdir/GEX_fastq,mNeu12-RNA,Gene Expression
-/md01/pengdj3/WT_mNeu/workdir/ATAC_fastq,mNeu12-ATAC,Chromatin Accessibility
+pdf("./06_mgatk/all_cell_type_mtDNA_depth.pdf",width=20,height=20)
+VlnPlot(OSN, c("mito_reads_rate","mtDNA_depth","nCount_alleles","nFeature_alleles"), pt.size = 0,ncol=1) + scale_y_log10()
+dev.off()
 
 
 

@@ -230,7 +230,7 @@ combined$detail_anno<- paste(combined$seurat_clusters,combined$Annotation,sep=":
 pdf("./03_all_celltype/Annotated_allcelltype_UMAP.pdf",width=6,height=5)
 DimPlot(combined, label = T, repel = TRUE, cols=myUmapcolors, reduction = "umap",group.by = "Annotation")
 dev.off()
-pdf("./03_all_celltype/Annotated_allcelltype_UMAP_detail.pdf",width=7,height=5)
+pdf("./03_all_celltype/Annotated_allcelltype_UMAP_detail.pdf",width=8.5,height=5)
 DimPlot(combined, label = T, repel = TRUE, cols=myUmapcolors, reduction = "umap",group.by = "detail_anno")
 dev.off()
 object <- combined
@@ -331,6 +331,8 @@ print(p1)}
 dev.off()
 
 saveRDS(combined,"./03_all_celltype/03_recall_peak/AR3_integrated_all_celltype_annotated_recall_peak.rds")
+
+
 
 new_Cells<- colnames(combined)
 old_combined<- readRDS("/data/R02/nieyg/project/lineage_tracing/heart_regeneration/01_AR3_scATAC/03_all_celltype/03_recall_peak/AR3_integrated_all_celltype_annotated_recall_peak.rds")

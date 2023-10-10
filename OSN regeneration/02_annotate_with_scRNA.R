@@ -118,47 +118,45 @@ pdf("./03_All_celltype/OSN-tree-cosine_detail_anno.pdf",width=6,height=6)
 ggtree(data.tree,layout = "circular") + geom_tiplab()+ geom_treescale()
 dev.off()
 
+table(OSN$predicted.id,OSN$seurat_clusters)
+
+
 # add annotation info in OSN 
-Idents(OSN)<-OSN$predicted.id
+Idents(OSN)<-OSN$seurat_clusters
 #####further annotation########
 OSN <- RenameIdents(
   object = OSN,
-  '0' = 'MP_DC',
-  '1' = 'EC',
-  '2' = 'MP_DC',
-  '3' = 'EC',
-  '4' = 'CM',
-  '5' = 'MP_DC',
-  '6' = 'FB',
-  '7' = 'FB',
-  '8' = 'CM',
-  '9' = 'FB',
-  '10' = 'FB',
-  '11' = 'FB',
-  '12' = 'CM',
-  '13' = 'FB',
-  '14' = 'Pericyte',
-  '15' = 'EC',
-  '16' = 'FB',
-  '17' = 'FB',
-  '18' = 'Epi',
-  '19' = 'MP_DC',
-  '20' = 'T',
-  '21' = 'Gra',
-  '22' = 'Epi',
-  '23' = 'MP_DC',
-  '24' = 'FB',
-  '25' = 'FB',
-  '26' = 'SMC',
-  '27' = 'FB',
-  '28' = 'SMC',
-  '29' = 'EC',
-  '30' = 'B',
-  '31' = 'EC',
-  '32' = 'Glial'
+  '0' = 'HBC',
+  '1' = 'HBC',
+  '2' = 'HBC',
+  '3' = 'HBC',
+  '4' = 'HBC',
+  '5' = 'HBC',
+  '6' = 'Sustentacular',
+  '7' = 'HBC',
+  '8' = 'HBC',
+  '9' = 'immatureOSNs',
+  '10' = 'immatureOSNs',
+  '11' = 'INP',
+  '12' = 'GBC',
+  '13' = 'respiratoryHBC',
+  '14' = 'respiratoryHBC',
+  '15' = 'MicrovillarCell',
+  '16' = 'GBC',
+  '17' = 'GBC',
+  '18' = 'respiratoryHBC',
+  '19' = 'matureOSNs',
+  '20' = 'BrushCell',
+  '21' = 'actGBC',
+  '22' = 'immatureOSNs',
+  '23' = 'HBC',
+  '24' = 'HBC',
+  '25' = 'immatureOSNs',
+  '26' = 'GBC',
+  '27' = 'immatureOSNs'
   )
 OSN@meta.data$Annotation<-Idents(OSN)
-table(OSN$Annotation,OSN$orig.ident)
+table(OSN$Annotation,OSN$predicted.id)
 
 Idents(OSN)<-OSN$Annotation;
 myUmapcolors <- c(  '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476D87',
@@ -171,7 +169,7 @@ myUmapcolors <- c(  '#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3', '#57C3F3', '#476
          "#D9D9D9", "#BC80BD", "#CCEBC5", "#FFED6F", "#E41A1C", "#377EB8", "#4DAF4A", 
          "#FF7F00", "#FFFF33", "#A65628", "#F781BF")
 
-pdf("./03_all_celltype/Annotated_allcelltype_UMAP.pdf",width=6,height=5)
+pdf("./03_All_celltype/Annotated_allcelltype_UMAP.pdf",width=6,height=5)
 DimPlot(OSN, label = T, repel = TRUE, cols=myUmapcolors, reduction = "umap",group.by = "Annotation")
 dev.off()
 
@@ -196,7 +194,7 @@ peak<-CallPeaks(
        format = "BED",
        fragment.tempdir = tempdir(),
        effective.genome.size = 2.7e+09,
-       outdir="./03_All_celltype/01_recall_peak/",
+       outdir="./05_recall_peak/",
        combine.peaks=TRUE
 )
 macs2_counts <- FeatureMatrix(
@@ -244,9 +242,4 @@ for(i in features){
 print(p1)}
 dev.off()
 saveRDS(OSN,"./03_All_celltype/OSN_all_celltype_annotated_recall_peak.rds")
-
-
-
-
-
 

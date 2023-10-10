@@ -1,7 +1,9 @@
+#devtools::install_github("Bioconductor/GenomeInfoDb")
+library(GenomicFeatures)
+library(EnsDb.Mmusculus.v79)
 library(Signac)
 library(Seurat)
 library(GenomeInfoDb)
-library(EnsDb.Mmusculus.v79)
 library(ggplot2)
 library(patchwork)
 set.seed(1234)
@@ -15,6 +17,7 @@ OSN_assay <- CreateChromatinAssay(
   fragments = '/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/atac_fragments.tsv.gz',
   min.cells= 10, min.features=200
   )
+
 metadata <- read.csv(
   file = "/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/plogF1met5d_masked_add/outs/per_barcode_metrics.csv",
   header = TRUE,
@@ -152,15 +155,13 @@ OSN <- FindClusters(
   resolution = 1.2,
   verbose = FALSE
 )
-table(OSN$seurat.clusters)
+table(OSN$seurat_clusters)
 pdf("./03_All_celltype/OSN_ATAC_Umap.pdf",width=6,height=6)
 DimPlot(object = OSN, label = TRUE) + NoLegend()
 dev.off()
 saveRDS(OSN, file = "./03_All_celltype/OSN_ATAC_all_celltype.rds")
 
 OSN<- readRDS("./03_All_celltype/OSN_ATAC_all_celltype.rds")
-
-
 
 # compute gene activities
 gene.activities <- GeneActivity(OSN)
@@ -171,51 +172,11 @@ OSN <- NormalizeData(
   object = OSN,
   assay = 'gene.activities',
   normalization.method = 'LogNormalize',
-  scale.factor = median(OSN$nCount_RNA)
+  scale.factor = median(OSN$nCount_gene.activities)
 )
-
-## Load the pre-processed scRNA-seq data
-raw_counts <- read.csv("/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/03_publish_data/GSE157068_countMatrix_k5.csv",row.names=1)
-load(file='/md01/nieyg/project/lineage_tracing/OSN_regeneration/00_data/03_publish_data/GSE157068_regenK5_scone_none_fq_ruv_k_1_no_bio_batch_rsec_adjP_mergecutoff_0.01_20190609_085359.Rda') 
-ls()
-
-# install gmp lib file 
-
-# ./configure --prefix=/md01/nieyg/software/gmp/6.2.1
-# make
-# make install
-# 
-# GMP_DIR="/md01/nieyg/software/gmp/6.2.1"
-# export LD_LIBRARY_PATH=${GMP_DIR}/lib64:$LD_LIBRARY_PATH
-# export LIBRARY_PATH=${GMP_DIR}/lib64:$LIBRARY_PATH
-# export CPATH=${GMP_DIR}/include:$CPATH
-
-allen_rna <- FindVariableFeatures(
-  object = allen_rna,
-  nfeatures = 5000
-)
-
-transfer.anchors <- FindTransferAnchors(
-  reference = allen_rna,
-  query = OSN,
-  reduction = 'cca',
-  dims = 1:40
-)
-
-predicted.labels <- TransferData(
-  anchorset = transfer.anchors,
-  refdata = allen_rna$subclass,
-  weight.reduction = OSN[['lsi']],
-  dims = 2:30
-)
-
-OSN <- AddMetaData(object = OSN, metadata = predicted.labels)
-plot1 <- DimPlot(allen_rna, group.by = 'subclass', label = TRUE, repel = TRUE) + NoLegend() + ggtitle('scRNA-seq')
-plot2 <- DimPlot(OSN, group.by = 'predicted.id', label = TRUE, repel = TRUE) + NoLegend() + ggtitle('scATAC-seq')
-plot1 + plot2
 
 ###annottaion 
-DefaultAssay(OSN) <- 'RNA'
+DefaultAssay(OSN) <- 'gene.activities'
 pdf("./03_All_celltype/cluster_dotplot_OSN_all.pdf")
 features <- c(
               "Omp","Gng13",#mOSN
@@ -231,14 +192,29 @@ features <- c(
               "Trp63","Krt5","Krt14",#HBC
               "Cxcl14","Meg3", #olfactory HBCs were distinguished from respiratory HBCs
               "Reg3g", #respiratory
-              "Ascl3",,#olfactory microvillar cells
+              "Ascl3",#olfactory microvillar cells
               "Krt18",
               "Cftr",# MV lonocyte
-              "Trpm5" #MV brush cell
-            
-)
+              "Trpm5" #MV brush cell     
+              )
 DotPlot(OSN, features = features,dot.scale = 3) + RotatedAxis() + theme(axis.text.x=element_text(size=8))
 dev.off()
 saveRDS(OSN, file = "./03_All_celltype/OSN_ATAC_GeneActivity_all_celltype.rds")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
