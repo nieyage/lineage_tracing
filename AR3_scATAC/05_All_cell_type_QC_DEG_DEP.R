@@ -31,7 +31,7 @@ Idents(combined)<- combined$detail_anno
 pdf("./03_all_celltype/all_cell_type_QC_vlnplot.pdf",width=16,height=10)
 VlnPlot(object = combined,features = c("nCount_ATAC","nFeature_ATAC","total","duplicate"), ncol = 1, pt.size = 0)
 VlnPlot(object = combined,features = c("unmapped","lowmapq","mitochondrial","passed_filters"), ncol = 1, pt.size = 0)
-VlnPlot(object = combined,features = c("is__cell_barcode","TSS_fragments","peak_region_fragments","nucleosome_signal"), ncol = 1, pt.size = 0)
+VlnPlot(object = combined,features = c("is_cell_barcode","TSS_fragments","peak_region_fragments","nucleosome_signal"), ncol = 1, pt.size = 0)
 VlnPlot(object = combined,features = c("TSS.enrichment","pct_reads_in_peaks","nCount_RNA","nFeature_RNA"), ncol = 1, pt.size = 0)
 dev.off()
 

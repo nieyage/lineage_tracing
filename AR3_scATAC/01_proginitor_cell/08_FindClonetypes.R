@@ -215,15 +215,43 @@ T_mut$refAllele<- AR3_C4_mito.data$refallele$ref
 C_mut$refAllele<- AR3_C4_mito.data$refallele$ref
 G_mut$refAllele<- AR3_C4_mito.data$refallele$ref
 
+
 all_mut<- rbind(A_mut,T_mut,C_mut,G_mut)
+write.csv(all_mut,"./all_mut.csv")
 
-label<- data.frame(barcode=rownames(combined),Label=combined$Annotation)
 
+
+
+library(LINEAGE)
+all_mut<- read.csv("./all_mut.csv")
 result=lineage(data = all_mut, repeats = 30, thread = 20)
 # The inferred clone labels are embedded in the returned result
 # as result$label. We also provide lineage_tree function to trace # the lineage tree of the returned result.
 hc=lineage_tree(result)
 str(hc, max.level = 1)
+
+saveRDS(result,"LINEAGE-result.rds")
+saveRDS(hc,"LINEAGE-hc.rds")
+
+combined<- readRDS("./03_all_celltype/04_mgatk/all_cell_type_mgatk_alleles.rds")
+combined$mito_reads_rate<- (combined$mitochondrial/combined$total)*100
+pdf("./03_all_celltype/04_mgatk/all_cell_type_mtDNA_depth2.pdf",width=20,height=10)
+VlnPlot(combined,log = TRUE, c("mito_reads_rate","mtDNA_depth","nCount_alleles","nFeature_alleles"), pt.size = 0,ncol=1) 
+dev.off()
+
+
+
+
+nohup Rscript LINEAGE.R > LINEAGE-output.log 2>&1 &
+
+
+
+
+
+
+
+label<- data.frame(barcode=rownames(combined),Label=combined$Annotation)
+
 plots0=traceplot(result, label)  #plots with reference clone labels
 plots=traceplot(result, result$label)  #plots with inferred clone labels
 # 2d visualization cluster results with clonal labels

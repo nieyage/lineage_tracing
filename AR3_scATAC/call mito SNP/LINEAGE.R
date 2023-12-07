@@ -86,6 +86,7 @@ scSplit count -v filtered.vcf -i filtered_rmdup_sorted.bam -b barcodes.tsv -r re
 
 
 
+
 # get the input file form mgatk?
 
 # 4.1 mode1: run parallel iterative optimization
@@ -167,10 +168,5 @@ print(plots$heatmap)
 # The recommended result is embedded in the returned result as result$best.
 best=list(result=result$best, plots=plots)
 
-
-
-
-
-
-
+mutation_matrix<- GetAssayData(combined,assay="alleles")
 

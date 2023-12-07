@@ -17,7 +17,8 @@ high.conf <- subset(
 )
 
 Allele_matrix<- as.matrix(combined@assays$alleles@counts)
-
+data<- rowSums(Allele_matrix)
+write.csv()
 # plot the Mean coverage per base, Number of mtDNA UMIs, Total number of UMIs
 # load mgatk output
 AR3_C4_cov.data <- read.table(gzfile("~/project/lineage_tracing/heart_regeneration/00_data/AR3_data/scATAC/AR3_C4_scATAC/mgatk_for_filtered_cells/final/AR3_C4_scATAC.coverage.txt.gz"),sep=",")
@@ -393,24 +394,37 @@ dev.off()
 write.csv(dplyr::select(conditions_subset.tib[1:8], min_clone_size, min_vaf, n_vois, n_cells, transitions, ARI), file = "./07_identify_mutation/variant_selection_thresholds_results.csv")
 
 # Select variants present in at least 20 cells with a VAF of >=10%
-# Select variants present in at least 50 cells with a VAF of >=10%
-
+a<- 7
 # do find clone type by function FindClonotypes()
 DefaultAssay(combined) <- "alleles"
-voi.ch <- conditions_subset.tib$vois[[8]]
+voi.ch <- conditions_subset.tib$vois[[a]]
 #crc<- subset(combined,cells=unique(unlist(positive_cells.ls)))
 crc <- FindClonotypes(combined,features = voi.ch,resolution = 2,assay="alleles",metric = "cosine",algorithm = 3)
 table(Idents(crc))
-
 crc$Clonotypes<- Idents(crc)
-pdf(str_c("./07_identify_mutation/variant_selection_thresholds_Findclonetype", a ,"_Heatmap.pdf"), width = 12, height = 6)
+pdf(str_c("./07_identify_mutation/Findclonetype","VAF10_20cells","_Heatmap.pdf"), width = 12, height = 6)
 DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 0.1) +scale_fill_viridis_c()
 DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 0.2) +scale_fill_viridis_c()
 DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 0.5) +scale_fill_viridis_c()
 DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 1) +scale_fill_viridis_c()
 dev.off();
 
+# Select variants present in at least 50 cells with a VAF of >=10%
+a<- 8
+# do find clone type by function FindClonotypes()
+DefaultAssay(combined) <- "alleles"
+voi.ch <- conditions_subset.tib$vois[[a]]
+#crc<- subset(combined,cells=unique(unlist(positive_cells.ls)))
+crc <- FindClonotypes(combined,features = voi.ch,resolution = 2,assay="alleles",metric = "cosine",algorithm = 3)
+table(Idents(crc))
 
+crc$Clonotypes<- Idents(crc)
+pdf(str_c("./07_identify_mutation/variant_selection_thresholds_Findclonetype", "VAF10_50cells" ,"_Heatmap.pdf"), width = 12, height = 6)
+DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 0.1) +scale_fill_viridis_c()
+DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 0.2) +scale_fill_viridis_c()
+DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 0.5) +scale_fill_viridis_c()
+DoHeatmap(crc, features = voi.ch, slot = "data", disp.max = 1) +scale_fill_viridis_c()
+dev.off();
 
 
 

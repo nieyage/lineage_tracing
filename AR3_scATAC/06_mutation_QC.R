@@ -213,6 +213,15 @@ Stacked_VlnPlot(seurat_object = combined, features = c("mito_reads_rate","mtDNA_
 dev.off()
 
 
+pdf("./03_all_celltype/04_mgatk/all_cell_type_mtDNA_depth2.pdf",width=20,height=10)
+VlnPlot(combined,log = TRUE, c("mito_reads_rate","mtDNA_depth","nCount_alleles","nFeature_alleles"), pt.size = 0,ncol=1) 
+
+
+
++ scale_y_log10()
+#Stacked_VlnPlot(seurat_object = combined, features = c("mito_reads_rate","mtDNA_depth","nCount_mito","nFeature_mito","nCount_alleles","nFeature_alleles"), x_lab_rotate = TRUE,
+    colors_use = myUmapcolors)
+dev.off()
 
 
 
